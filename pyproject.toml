@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "svg-pattern-generation"
+version = "0.1.0"
+description = "Generate dynamic SVG patterns"
+authors = ["Emil Bjørn <bjoern.emil@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.39.0"
+"svg.py" = "^1.5.0"
+fpdf2 = "^2.8.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

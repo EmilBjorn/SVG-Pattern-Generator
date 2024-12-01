@@ -2,7 +2,7 @@
 Module to draw a SVG of hexagonal cells that are complete in the bottom, 
 but gradually becomes less complete in the top of the drawing
 """
-
+#%%#
 import math
 import random
 import svg
@@ -10,6 +10,7 @@ import svg
 # import fpdf
 
 
+#%%#
 def draw(width, height, stroke=0.02, *args, **kwargs) -> svg.SVG:
 
     elements: list[svg.Element] = []
@@ -32,40 +33,6 @@ def draw(width, height, stroke=0.02, *args, **kwargs) -> svg.SVG:
             fill="pink",
             stroke="black"))
 
-    # Eksempel på at bruge polygon - det er dog ikke viable til endelig løsning, da jeg ikke kan fjerne siderne.
-    # Der skal i stedet bruges Line elementer
-    sidelength = 60
-    # elements.append(
-    #     svg.Polygon(points=[
-    #         0,
-    #         math.sin(deg30) * sidelength, 0,
-    #         (math.sin(deg30) + 1) * sidelength,
-    #         math.cos(deg30) * sidelength,
-    #         (2 * math.sin(deg30) + 1) * sidelength,
-    #         2 * math.cos(deg30) * sidelength,
-    #         (math.sin(deg30) + 1) * sidelength,
-    #         2 * math.cos(deg30) * sidelength,
-    #         math.sin(deg30) * sidelength,
-    #         math.cos(deg30) * sidelength, 0
-    #     ],
-    #                 stroke="black",
-    #                 fill="white"))
-
-    elements.append(
-        svg.Path(d=[
-            svg.M(50 + 0, 50 + math.sin(deg30) * sidelength),
-            svg.L(50 + 0, 50 + (math.sin(deg30) + 1) * sidelength),
-            svg.L(50 + math.cos(deg30) * sidelength,
-                  50 + (2 * math.sin(deg30) + 1) * sidelength),
-            svg.M(50 + 2 * math.cos(deg30) * sidelength,
-                  50 + (math.sin(deg30) + 1) * sidelength),
-            svg.L(50 + 2 * math.cos(deg30) * sidelength,
-                  50 + math.sin(deg30) * sidelength),
-            svg.L(50 + math.cos(deg30) * sidelength, 50 + 0)
-        ],
-                 stroke="black",
-                 fill="None"))
-
     def hexstartpos(index: tuple, sidelength: int = 1) -> tuple:
         # function to generate starting positions for hexagons in grid
 
@@ -84,45 +51,47 @@ def draw(width, height, stroke=0.02, *args, **kwargs) -> svg.SVG:
     group = svg.G(elements=elements)
 
     def hexagon(
-        unit_sidelength: float = 1,
-        sides: int = 6,
-        start_coord: tuple[int, int] = (0, 0)) -> svg.Element:
+        sidelength=60,
+        completion: float = 1,
+        start_coord: tuple[int, int] = (0, 0)
+    ) -> svg.Element:
         # elements: list[svg.Element] = []
         # elements.append(
         #         svg.Line(x1=)
         # )
 
-        def hexcoordinates(index, sidelength=1) -> dict:
-            coordinates = {
-                "0": {
-                    "x": 0,
-                    "y": math.sin(deg30) * sidelength
-                },
-                "1": {
-                    "x": 0,
-                    "y": (math.sin(deg30) + 1) * sidelength
-                },
-                "2": {
-                    "x": math.cos(deg30) * sidelength,
-                    "y": (2 * math.sin(deg30) + 1) * sidelength
-                },
-                "3": {
-                    "x": 2 * math.cos(deg30) * sidelength,
-                    "y": (math.sin(deg30) + 1) * sidelength
-                },
-                "4": {
-                    "x": 2 * math.cos(deg30) * sidelength,
-                    "y": math.sin(deg30) * sidelength
-                },
-                "5": {
-                    "x": math.cos(deg30) * sidelength,
-                    "y": 0
-                }
-            }
+        hexrelativecoordinates2 = [(0, 1), (math.cos(deg30), math.sin(deg30)),
+                                   (math.cos(deg30), -math.sin(deg30)),
+                                   (0, -1),
+                                   (-math.cos(deg30), -math.sin(deg30)),
+                                   (-math.cos(deg30), math.sin(deg30))]
 
-            return coordinates[str(index)]
+        linesegments: list[svg.Element] = [
+            svg.M(*start_coord),
+            svg.m(*hexrelativecoordinates2[5])
+        ]
 
-        return
+        for i in range(0, 6):
+
+            drawline = True if random.random() < completion else False
+            coords = [x * sidelength for x in hexrelativecoordinates2[i]]
+
+            linesegment = svg.l(*coords)  #if drawline else svg.m(*coords)
+
+            linesegments.append(linesegment)
+
+        hexagon = svg.Path(d=linesegments, stroke="red", fill="none")
+
+        return hexagon if drawline else None
+
+    for i in range(10):
+        for j in range(10):
+            pos = hexstartpos((i, j), 11.5)
+            pct = math.sqrt((1 / (j + 1)))
+            print(pct)
+            elements.append(hexagon(10, pct, pos))
+
+    # elements.append(hexagon(40, 0.5, (50, 100)))
 
     return svg.SVG(
         viewBox=svg.ViewBoxSpec(0, 0, width, height),
@@ -141,3 +110,5 @@ if __name__ == '__main__':
     canvas = draw(WIDTH, HEIGHT)
     with open('output.svg', 'w', encoding='UTF-8') as file:
         file.write(str(canvas))
+
+# %%
